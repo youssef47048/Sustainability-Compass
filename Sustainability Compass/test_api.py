@@ -46,8 +46,13 @@ def test_gemini_api():
             print("  ⚠️  No compatible models found!")
             return False
         
-        # Test with preferred model or first available (User specified priority)
-        preferred_models = ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite']
+        # Test with preferred model or first available (Updated to use free models)
+        preferred_models = [
+            'models/gemini-2.5-flash',      # Free tier - latest
+            'models/gemini-2.0-flash',      # Free tier - alternative
+            'models/gemini-1.5-flash',      # Free tier - reliable
+            'models/gemini-1.5-pro'         # Free tier - capable
+        ]
         test_model = None
         
         for preferred in preferred_models:

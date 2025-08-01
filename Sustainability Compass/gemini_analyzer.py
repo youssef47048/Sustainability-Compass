@@ -23,20 +23,21 @@ class GeminiAnalyzer:
         """Configure Gemini AI with API key"""
         try:
             genai.configure(api_key=self.api_key)
-            # Try different model names in order of preference
-          
-            # Try different model names in order of preference (User specified priority)
+            # Updated model names based on actual available models (Jan 2025)
+            # Prioritizing free tier models that are guaranteed to work
             model_names = [
-                'gemini-2.5-pro',                   # User preferred - Premium model
-                'models/gemini-2.5-flash',          # User preferred - Latest flash model  
-                'models/gemini-2.5-flash-lite',     # User preferred - Lite version
-                'models/gemini-2.5-pro',            # Alternative format for pro
-                'gemini-2.5-flash',                 # Alternative format for flash
-                'models/gemini-1.5-flash',          # Fallback - fast and efficient
-                'models/gemini-1.5-pro',            # Fallback - capable model
-                'gemini-1.5-flash',                 # Fallback without models/ prefix
-                'gemini-1.5-pro',                   # Fallback without models/ prefix
-                'gemini-pro'                        # Legacy fallback
+                'models/gemini-2.5-flash',              # Latest free model - fast and efficient
+                'models/gemini-2.0-flash',              # Alternative latest free model
+                'models/gemini-1.5-flash',              # Reliable free model - fast
+                'models/gemini-1.5-pro',                # Reliable free model - more capable
+                'models/gemini-2.5-flash-lite',         # Lite version if others fail
+                'models/gemini-1.5-flash-latest',       # Latest version of 1.5 flash
+                'models/gemini-1.5-pro-latest',         # Latest version of 1.5 pro
+                # Premium models (require payment) - only try if user has paid tier
+                'models/gemini-2.5-pro',                # Premium model 
+                'gemini-2.5-flash',                     # Alternative format
+                'gemini-1.5-flash',                     # Alternative format
+                'gemini-1.5-pro'                        # Alternative format
             ]
             
             self.model = None
@@ -64,7 +65,7 @@ class GeminiAnalyzer:
                 
         except Exception as e:
             self.logger.error(f"Failed to configure Gemini AI: {str(e)}")
-            raise Exception(f"Gemini AI configuration failed: {str(e)}")
+            raise
     
     def _list_available_models(self):
         """List available models for debugging"""
@@ -445,74 +446,125 @@ class GeminiAnalyzer:
     def _parse_sdg_response(self, response_text: str) -> Dict:
         """Parse SDG mapping response and ensure individual SDG entries"""
         try:
-            # Try to extract JSON from response
-            json_start = response_text.find('{')
-            json_end = response_text.rfind('}') + 1
+            # Add debugging to see what the AI is actually returning
+            self.logger.info(f"🔍 Raw AI Response (first 1000 chars): {response_text[:1000]}")
             
-            if json_start != -1 and json_end != -1:
-                json_text = response_text[json_start:json_end]
+            # Try to extract JSON from response - handle malformed JSON with extra text
+            json_start = response_text.find('{')
+            if json_start == -1:
+                self.logger.warning("🔍 No opening brace found in response")
+                return self._create_fallback_sdg_response(response_text)
+            
+            # Find the matching closing brace by counting braces
+            brace_count = 0
+            json_end = -1
+            for i, char in enumerate(response_text[json_start:], json_start):
+                if char == '{':
+                    brace_count += 1
+                elif char == '}':
+                    brace_count -= 1
+                    if brace_count == 0:
+                        json_end = i + 1
+                        break
+            
+            if json_end == -1:
+                self.logger.warning("🔍 No matching closing brace found")
+                return self._create_fallback_sdg_response(response_text)
+            
+            json_text = response_text[json_start:json_end]
+            self.logger.info(f"🔍 Extracted JSON (first 500 chars): {json_text[:500]}")
+            
+            try:
                 raw_data = json.loads(json_text)
-                
-                # Restructure to ensure individual SDG entries
-                structured_result = {}
-                
-                # Check if we got the expected format or need to restructure
-                if 'sdg_mapping' in raw_data and isinstance(raw_data['sdg_mapping'], dict):
-                    # Extract from nested structure
-                    mapping_data = raw_data['sdg_mapping']
-                    for key, value in mapping_data.items():
-                        if 'sdg' in key.lower():
-                            # Extract SDG number
-                            import re
-                            sdg_num = re.search(r'(\d+)', key)
-                            if sdg_num:
-                                sdg_key = f"sdg_{sdg_num.group(1)}"
-                                if isinstance(value, dict):
-                                    structured_result[sdg_key] = value
-                                else:
-                                    structured_result[sdg_key] = {
-                                        'impact_level': 'Medium',
-                                        'score': 5,
-                                        'contributions': [str(value)],
-                                        'improvement_areas': []
-                                    }
-                
-                # Also check for direct SDG entries
-                for key, value in raw_data.items():
+                self.logger.info(f"🔍 Successfully parsed JSON with keys: {list(raw_data.keys())}")
+            except json.JSONDecodeError as e:
+                self.logger.error(f"🔍 JSON parsing still failed after extraction: {str(e)}")
+                return self._create_fallback_sdg_response(response_text)
+            
+            # Restructure to ensure individual SDG entries
+            structured_result = {}
+            
+            # Strategy 1: Check if we got the expected format with nested sdg_mapping
+            if 'sdg_mapping' in raw_data and isinstance(raw_data['sdg_mapping'], dict):
+                self.logger.info("🔍 Found nested sdg_mapping structure")
+                mapping_data = raw_data['sdg_mapping']
+                for key, value in mapping_data.items():
                     if 'sdg' in key.lower():
+                        # Extract SDG number
                         import re
                         sdg_num = re.search(r'(\d+)', key)
                         if sdg_num:
                             sdg_key = f"sdg_{sdg_num.group(1)}"
                             if isinstance(value, dict):
                                 structured_result[sdg_key] = value
+                            else:
+                                structured_result[sdg_key] = {
+                                    'impact_level': 'Medium',
+                                    'score': 5,
+                                    'contributions': [str(value)],
+                                    'improvement_areas': []
+                                }
+            
+            # Strategy 2: Check for direct SDG entries at root level
+            for key, value in raw_data.items():
+                if 'sdg' in key.lower() and key != 'sdg_mapping':
+                    import re
+                    sdg_num = re.search(r'(\d+)', key)
+                    if sdg_num:
+                        sdg_key = f"sdg_{sdg_num.group(1)}"
+                        if isinstance(value, dict):
+                            structured_result[sdg_key] = value
+                            self.logger.info(f"🔍 Found direct SDG entry: {sdg_key}")
+            
+            # Strategy 3: Check for SDG array or other formats
+            for key, value in raw_data.items():
+                if isinstance(value, list):
+                    # Could be an array of SDG assessments
+                    for item in value:
+                        if isinstance(item, dict) and 'sdg' in str(item).lower():
+                            # Try to extract SDG number from the item
+                            for item_key, item_value in item.items():
+                                if 'sdg' in item_key.lower():
+                                    sdg_match = re.search(r'(\d+)', str(item))
+                                    if sdg_match:
+                                        sdg_key = f"sdg_{sdg_match.group(1)}"
+                                        structured_result[sdg_key] = item
+                                        break
+            
+            self.logger.info(f"🔍 Structured result has {len(structured_result)} SDGs with actual data")
+            
+            # If we still have no structured data, it might be a different format
+            if not structured_result:
+                self.logger.warning("🔍 No SDG data found in expected format, using fallback")
+                self.logger.info(f"🔍 Available keys in response: {list(raw_data.keys())}")
+                # Check if there's any data we can extract
+                sample_data = str(raw_data)[:500]
+                self.logger.info(f"🔍 Sample raw data: {sample_data}")
+            
+            # Ensure all 17 SDGs are present with proper structure
+            for i in range(1, 18):
+                sdg_key = f"sdg_{i}"
+                if sdg_key not in structured_result:
+                    structured_result[sdg_key] = {
+                        'impact_level': 'None',
+                        'score': 0,
+                        'contributions': [],
+                        'improvement_areas': []
+                    }
+                else:
+                    # Ensure proper structure for existing SDGs
+                    if 'score' not in structured_result[sdg_key]:
+                        structured_result[sdg_key]['score'] = 0
+                    # Ensure numeric score
+                    try:
+                        structured_result[sdg_key]['score'] = float(structured_result[sdg_key]['score'])
+                    except (ValueError, TypeError):
+                        structured_result[sdg_key]['score'] = 0
+            
+            return structured_result
                 
-                # Ensure all 17 SDGs are present with proper structure
-                for i in range(1, 18):
-                    sdg_key = f"sdg_{i}"
-                    if sdg_key not in structured_result:
-                        structured_result[sdg_key] = {
-                            'impact_level': 'None',
-                            'score': 0,
-                            'contributions': [],
-                            'improvement_areas': []
-                        }
-                    else:
-                        # Ensure proper structure for existing SDGs
-                        if 'score' not in structured_result[sdg_key]:
-                            structured_result[sdg_key]['score'] = 0
-                        # Ensure numeric score
-                        try:
-                            structured_result[sdg_key]['score'] = float(structured_result[sdg_key]['score'])
-                        except (ValueError, TypeError):
-                            structured_result[sdg_key]['score'] = 0
-                
-                return structured_result
-            else:
-                # Fallback: create structured response from text
-                return self._create_fallback_sdg_response(response_text)
-                
-        except json.JSONDecodeError:
+        except Exception as e:
+            self.logger.error(f"🔍 Unexpected error in SDG parsing: {str(e)}")
             return self._create_fallback_sdg_response(response_text)
     
     def _create_fallback_esg_response(self, text: str) -> Dict:

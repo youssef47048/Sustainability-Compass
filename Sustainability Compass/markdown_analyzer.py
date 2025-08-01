@@ -30,13 +30,16 @@ class MarkdownGeminiAnalyzer:
         try:
             genai.configure(api_key=self.api_key)
             
-            # Try premium models first (since user is using gemini-2.5-pro)
+            # Updated model names based on actual available models (Jan 2025)
+            # Prioritizing free tier models that are guaranteed to work
             model_names = [
-                'gemini-2.5-pro',                   # Premium - highest capability
-                'models/gemini-2.5-pro',            # Alternative format
-                'models/gemini-2.5-flash',          # Fast alternative
-                'models/gemini-1.5-pro',            # Fallback
-                'models/gemini-1.5-flash'           # Final fallback
+                'models/gemini-2.5-flash',              # Latest free model - fast and efficient
+                'models/gemini-2.0-flash',              # Alternative latest free model
+                'models/gemini-1.5-flash',              # Reliable free model - fast
+                'models/gemini-1.5-pro',                # Reliable free model - more capable
+                'models/gemini-2.5-flash-lite',         # Lite version if others fail
+                'models/gemini-1.5-flash-latest',       # Latest version of 1.5 flash
+                'models/gemini-1.5-pro-latest'          # Latest version of 1.5 pro
             ]
             
             self.model = None
@@ -445,12 +448,18 @@ Please analyze this complete document thoroughly and provide comprehensive, evid
         }
     
     def _extract_sdg_mapping(self, markdown_text: str) -> Dict:
-        """Extract individual SDG mappings"""
+        """Extract individual SDG mappings with flexible parsing"""
         sdg_mapping = {}
         
-        # Find all SDG sections
+        # Add debugging to see what we're working with
+        self.logger.info("🔍 Starting SDG extraction from markdown")
+        self.logger.info(f"🔍 Markdown text length: {len(markdown_text)} characters")
+        
+        # Strategy 1: Try the expected specific format first
         sdg_pattern = r'#### SDG (\d+): ([^(]+)\(Score: (\d+(?:\.\d+)?)\)(.*?)(?=####|\Z)'
         sdg_matches = re.findall(sdg_pattern, markdown_text, re.DOTALL | re.IGNORECASE)
+        
+        self.logger.info(f"🔍 Found {len(sdg_matches)} SDGs with specific format")
         
         for sdg_num, sdg_name, score, content in sdg_matches:
             sdg_key = f"sdg_{sdg_num}"
@@ -476,13 +485,84 @@ Please analyze this complete document thoroughly and provide comprehensive, evid
                 'improvement_areas': [improvements] if improvements else []
             }
         
+        # Strategy 2: Try alternative formats if the main pattern didn't find all SDGs
+        if len(sdg_mapping) < 10:  # If we found fewer than 10 SDGs, try alternative patterns
+            self.logger.info("🔍 Trying alternative SDG extraction patterns")
+            
+            # More flexible patterns
+            alternative_patterns = [
+                r'SDG[:\s]*(\d+)[:\s]*([^(\n]*?)[\s\-]*[Ss]core[:\s]*(\d+(?:\.\d+)?)',  # SDG 1: Name - Score: 7
+                r'(\d+)\.\s*([^:\n]*?)[\s\-]*[Ss]core[:\s]*(\d+(?:\.\d+)?)',           # 1. Name - Score: 7  
+                r'SDG\s*(\d+)[^\d]*?(\d+(?:\.\d+)?)[^\d]*?(?:out of 10|/10|\b)',       # SDG 1 something 7 out of 10
+                r'Goal\s*(\d+)[:\s]*([^(\n]*?)[\s\-]*(\d+(?:\.\d+)?)'                  # Goal 1: Name 7
+            ]
+            
+            for i, pattern in enumerate(alternative_patterns):
+                matches = re.findall(pattern, markdown_text, re.IGNORECASE | re.MULTILINE)
+                self.logger.info(f"🔍 Alternative pattern {i+1} found {len(matches)} matches")
+                
+                for match in matches:
+                    if len(match) >= 3:
+                        sdg_num, name_or_score, score_or_name = match[0], match[1], match[2]
+                        
+                        # Handle different match formats
+                        try:
+                            # Try to determine which is the score
+                            if '.' in score_or_name or score_or_name.isdigit():
+                                score = float(score_or_name)
+                                name = name_or_score
+                            else:
+                                score = float(name_or_score) if name_or_score.replace('.', '').isdigit() else 5.0
+                                name = score_or_name
+                        except ValueError:
+                            score = 5.0  # Default score
+                            name = f"SDG {sdg_num}"
+                        
+                        sdg_key = f"sdg_{sdg_num}"
+                        if sdg_key not in sdg_mapping:  # Don't overwrite good matches
+                            sdg_mapping[sdg_key] = {
+                                'score': min(max(score, 0), 10),  # Ensure score is between 0-10
+                                'name': name.strip() if name else SDG_GOALS.get(int(sdg_num), f"SDG {sdg_num}"),
+                                'impact_level': 'High' if score >= 7 else 'Medium' if score >= 4 else 'Low',
+                                'contributions': ['Analysis based on document content'],
+                                'evidence': 'Extracted from comprehensive analysis',
+                                'improvement_areas': ['Further reporting recommended']
+                            }
+        
+        # Strategy 3: Extract any score-like patterns for remaining SDGs
+        if len(sdg_mapping) < 15:
+            self.logger.info("🔍 Trying general score extraction for remaining SDGs")
+            
+            # Look for any mention of SDG numbers with scores in the text
+            general_pattern = r'(?:SDG|Goal)[\s#]*(\d+).*?(\d+(?:\.\d+)?)'
+            general_matches = re.findall(general_pattern, markdown_text, re.IGNORECASE)
+            
+            for sdg_num, score_str in general_matches:
+                sdg_key = f"sdg_{sdg_num}"
+                if sdg_key not in sdg_mapping:
+                    try:
+                        score = float(score_str)
+                        if 0 <= score <= 10:  # Only accept reasonable scores
+                            sdg_mapping[sdg_key] = {
+                                'score': score,
+                                'name': SDG_GOALS.get(int(sdg_num), f"SDG {sdg_num}"),
+                                'impact_level': 'High' if score >= 7 else 'Medium' if score >= 4 else 'Low',
+                                'contributions': ['Analysis based on document content'],
+                                'evidence': 'Extracted from comprehensive analysis',
+                                'improvement_areas': ['Further reporting recommended']
+                            }
+                    except ValueError:
+                        continue
+        
+        self.logger.info(f"🔍 Successfully extracted {len(sdg_mapping)} SDGs with scores > 0")
+        
         # Ensure all 17 SDGs are present
         for i in range(1, 18):
             sdg_key = f"sdg_{i}"
             if sdg_key not in sdg_mapping:
                 sdg_mapping[sdg_key] = {
                     'score': 0,
-                    'name': SDG_GOALS.get(sdg_key, f"SDG {i}"),
+                    'name': SDG_GOALS.get(i, f"SDG {i}"),
                     'impact_level': 'None',
                     'contributions': [],
                     'evidence': '',

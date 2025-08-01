@@ -1,18 +1,20 @@
-# Main GUI Application for Sustainability Compass
-import customtkinter as ctk
+# GUI Application
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, messagebox
+from tkinter import ttk
+import customtkinter as ctk
 import threading
-import webbrowser
 import os
+import logging
 from datetime import datetime
-from typing import Dict, Optional
 
-# Import our modules
-from config import *
+# Core modules
 from pdf_processor import PDFProcessor
-from markdown_analyzer import MarkdownGeminiAnalyzer
+from markdown_analyzer import MarkdownGeminiAnalyzer  # Switched back to MarkdownGeminiAnalyzer
 from visualization import SustainabilityVisualizer
+from config import *
+
+# Try to import enhanced export manager, fallback to regular if not available
 try:
     from enhanced_export_manager import EnhancedReportExporter
     ENHANCED_EXPORT_AVAILABLE = True
@@ -54,7 +56,7 @@ class SustainabilityCompassApp:
         
         # Initialize Gemini analyzer and check model
         try:
-            self.gemini_analyzer = MarkdownGeminiAnalyzer()
+            self.gemini_analyzer = MarkdownGeminiAnalyzer()  # Switched back to MarkdownGeminiAnalyzer
             # Get the actual model name that was successfully configured
             model_name = getattr(self.gemini_analyzer.model, '_model_name', None)
             if model_name and 'gemini' in model_name.lower():
@@ -73,7 +75,7 @@ class SustainabilityCompassApp:
                     display_name = 'Gemini 1.5 Pro'
                 else:
                     display_name = display_name.title()
-                self.api_status_text = f"🟢 {display_name} Ready (Full Content)"
+                self.api_status_text = f"🟢 {display_name} Ready (Full Content)"  # Added back Full Content indicator
             else:
                 self.api_status_text = "🟢 Analysis Engine Ready (Full Content)"
         except Exception as e:
@@ -429,7 +431,7 @@ class SustainabilityCompassApp:
             language = self.current_language.get()
             self.current_analysis = self.gemini_analyzer.analyze_full_document(
                 self.pdf_content, language
-            )
+            )  # Changed back to analyze_full_document for MarkdownGeminiAnalyzer
             
             self.root.after(0, lambda: self.update_progress(0.8, "Generating visualizations..."))
             

@@ -7,7 +7,7 @@ Helps identify where issues are occurring in the analysis pipeline
 import json
 import traceback
 from pdf_processor import PDFProcessor
-from gemini_analyzer import GeminiAnalyzer
+from markdown_analyzer import MarkdownGeminiAnalyzer  # Changed to MarkdownGeminiAnalyzer
 from export_manager import ReportExporter
 
 def debug_analysis_pipeline(pdf_path: str):
@@ -48,13 +48,15 @@ def debug_analysis_pipeline(pdf_path: str):
         print(f"🔧 Error details: {traceback.format_exc()}")
         return None
     
-    # Step 2: Test Gemini API Connection
+    # Step 2: Test Gemini AI Configuration
     print("\n🤖 STEP 2: Gemini AI Configuration")
     print("-" * 30)
     try:
-        gemini_analyzer = GeminiAnalyzer()
-        model_name = getattr(gemini_analyzer.model, '_model_name', 'Unknown')
+        gemini_analyzer = MarkdownGeminiAnalyzer()  # Changed to MarkdownGeminiAnalyzer
         print(f"✅ Gemini AI configured successfully")
+        
+        # Get model info
+        model_name = getattr(gemini_analyzer.model, '_model_name', 'Unknown')
         print(f"🎯 Model: {model_name}")
         
     except Exception as e:
@@ -81,10 +83,15 @@ def debug_analysis_pipeline(pdf_path: str):
     print("\n📊 STEP 4: ESG Analysis")
     print("-" * 30)
     try:
-        esg_results = gemini_analyzer.analyze_esg_performance(pdf_content, 'en')
-        print(f"✅ ESG analysis completed")
-        print(f"📋 Result type: {type(esg_results)}")
-        print(f"🔑 Keys: {list(esg_results.keys()) if isinstance(esg_results, dict) else 'Not a dict'}")
+        # Use markdown analyzer's full document analysis
+        full_results = gemini_analyzer.analyze_full_document(pdf_content, 'en')
+        
+        print(f"✅ Full analysis completed")
+        print(f"📋 Result type: {type(full_results)}")
+        print(f"🔑 Keys: {list(full_results.keys()) if isinstance(full_results, dict) else 'Not a dict'}")
+        
+        # Extract ESG analysis from results
+        esg_results = full_results.get('esg_analysis', {}) if isinstance(full_results, dict) else {}
         
         # Show ESG results
         if isinstance(esg_results, dict):
@@ -103,12 +110,15 @@ def debug_analysis_pipeline(pdf_path: str):
         print(f"❌ ESG analysis failed: {str(e)}")
         print(f"🔧 Error details: {traceback.format_exc()}")
         esg_results = {}
+        full_results = {}
     
-    # Step 5: Test SDG Mapping
+    # Step 5: Test SDG Mapping (extracted from full results)
     print("\n🎯 STEP 5: SDG Mapping")
     print("-" * 30)
     try:
-        sdg_results = gemini_analyzer.map_to_sdgs(pdf_content, esg_results, 'en')
+        # Extract SDG mapping from full results
+        sdg_results = full_results.get('sdg_mapping', {}) if isinstance(full_results, dict) else {}
+        
         print(f"✅ SDG mapping completed")
         print(f"📋 Result type: {type(sdg_results)}")
         print(f"🔑 Keys: {list(sdg_results.keys()) if isinstance(sdg_results, dict) else 'Not a dict'}")
@@ -116,9 +126,13 @@ def debug_analysis_pipeline(pdf_path: str):
         # Show top SDGs
         if isinstance(sdg_results, dict):
             sdg_scores = []
+            print("   🔍 Detailed SDG Data:")
             for key, data in sdg_results.items():
                 if key.startswith('sdg_') and isinstance(data, dict):
                     score = data.get('score', 0)
+                    impact = data.get('impact_level', 'Unknown')
+                    contributions = data.get('contributions', [])
+                    print(f"     {key}: score={score}, impact={impact}, contributions={len(contributions)}")
                     if score > 0:
                         sdg_num = key.split('_')[1]
                         sdg_scores.append((f"SDG {sdg_num}", score))
@@ -129,7 +143,11 @@ def debug_analysis_pipeline(pdf_path: str):
                 for sdg, score in sdg_scores[:5]:
                     print(f"   {sdg}: {score}/10")
             else:
-                print("   ⚠️  No SDG scores found")
+                print("   ⚠️  No SDG scores found (all scores are 0)")
+                # Show a few example SDG entries for debugging
+                sample_keys = [k for k in sdg_results.keys() if k.startswith('sdg_')][:3]
+                for key in sample_keys:
+                    print(f"   📋 Sample {key}: {sdg_results[key]}")
                 
             # Check for errors
             if sdg_results.get('error'):
@@ -146,77 +164,41 @@ def debug_analysis_pipeline(pdf_path: str):
     print("\n🔄 STEP 6: Complete Analysis")
     print("-" * 30)
     try:
-        complete_results = gemini_analyzer.generate_comprehensive_report(pdf_content, 'en')
+        # Results are already available from the full analysis above
+        complete_results = full_results
+        
         print(f"✅ Complete analysis finished")
         print(f"📋 Result type: {type(complete_results)}")
+        print(f"🔑 Main keys: {list(complete_results.keys()) if isinstance(complete_results, dict) else 'Not a dict'}")
         
+        # Show summary of each section
         if isinstance(complete_results, dict):
-            print(f"🔑 Main keys: {list(complete_results.keys())}")
-            
-            # Check each section
-            sections = ['executive_summary', 'esg_analysis', 'sdg_mapping', 'recommendations']
-            for section in sections:
-                if section in complete_results:
-                    data = complete_results[section]
-                    if isinstance(data, str):
-                        length = len(data)
-                        preview = data[:100] + "..." if len(data) > 100 else data
-                        print(f"   {section}: {length} chars - '{preview}'")
-                    elif isinstance(data, list):
-                        print(f"   {section}: {len(data)} items")
-                    elif isinstance(data, dict):
-                        print(f"   {section}: {len(data)} keys")
-                    else:
-                        print(f"   {section}: {type(data)}")
+            for key, value in complete_results.items():
+                if key == 'executive_summary':
+                    print(f"   {key}: {len(str(value))} chars - '{str(value)[:100]}...'")
+                elif isinstance(value, dict):
+                    print(f"   {key}: {len(value)} keys")
+                elif isinstance(value, list):
+                    print(f"   {key}: {len(value)} items")
                 else:
-                    print(f"   ❌ Missing: {section}")
+                    print(f"   {key}: {type(value)}")
                     
-            # Check for errors
-            if complete_results.get('error'):
-                print(f"⚠️  Complete Analysis Error: {complete_results.get('error_message')}")
-                
-        else:
-            print(f"⚠️  Unexpected complete result format: {complete_results}")
-            
-        return complete_results
-        
     except Exception as e:
         print(f"❌ Complete analysis failed: {str(e)}")
         print(f"🔧 Error details: {traceback.format_exc()}")
-        return None
+        complete_results = full_results  # Use whatever we have
     
-def debug_export(analysis_results, export_format='pdf'):
-    """
-    Debug the export functionality
-    
-    Args:
-        analysis_results: Results from analysis
-        export_format: Format to test ('pdf', 'word', 'excel')
-    """
-    
-    print(f"\n📤 STEP 7: Export Debug ({export_format.upper()})")
+    # Step 7: Test Export
+    print("\n📤 STEP 7: Export Debug (PDF)")
     print("-" * 30)
-    
-    if not analysis_results:
-        print("❌ No analysis results to export")
-        return
-    
     try:
         exporter = ReportExporter()
-        test_file = f"debug_test_report.{export_format if export_format != 'word' else 'docx'}"
+        test_file = f"debug_test_report.pdf"
         
-        if export_format == 'pdf':
-            success = exporter.export_pdf_report(analysis_results, test_file, 'en')
-        elif export_format == 'word':
-            success = exporter.export_word_report(analysis_results, test_file, 'en')
-        elif export_format == 'excel':
-            success = exporter.export_excel_report(analysis_results, test_file, 'en')
-        else:
-            print(f"❌ Unknown export format: {export_format}")
-            return
-            
+        success = exporter.export_pdf_report(complete_results, test_file, 'en')
+        
         if success:
-            print(f"✅ {export_format.title()} export successful: {test_file}")
+            print(f"✅ PDF export successful: {test_file}")
             import os
             if os.path.exists(test_file):
                 size = os.path.getsize(test_file)
@@ -226,7 +208,7 @@ def debug_export(analysis_results, export_format='pdf'):
             else:
                 print("❌ Export reported success but file not found!")
         else:
-            print(f"❌ {export_format.title()} export failed")
+            print(f"❌ PDF export failed")
             
     except Exception as e:
         print(f"❌ Export error: {str(e)}")
