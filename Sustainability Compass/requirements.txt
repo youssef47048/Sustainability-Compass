@@ -1,0 +1,39 @@
+# GUI and Desktop Application
+customtkinter>=5.2.0
+Pillow>=9.5.0
+tkinter-tooltip>=2.0.0
+
+# PDF Processing
+PyPDF2>=3.0.0
+pdfplumber>=0.9.0
+pytesseract>=0.3.10
+
+# Google Gemini AI
+google-generativeai>=0.3.0
+
+# Data Processing and Analysis
+pandas>=2.0.0
+numpy>=1.24.0
+openpyxl>=3.1.0
+
+# Visualization
+matplotlib>=3.7.0
+plotly>=5.15.0
+seaborn>=0.12.0
+
+# Document Export
+reportlab>=4.0.0
+python-docx>=0.8.11
+
+# Arabic Text Support
+arabic-reshaper>=3.0.0
+python-bidi>=0.4.2
+
+# HTTP Requests and JSON
+requests>=2.31.0
+
+# Date and Time
+python-dateutil>=2.8.0
+
+# Configuration
+python-dotenv>=1.0.0 

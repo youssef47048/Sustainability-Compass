@@ -1,0 +1,25 @@
+# Minimal Requirements - Essential packages only
+# GUI
+customtkinter>=5.2.0
+
+# PDF Processing  
+PyPDF2>=3.0.0
+pdfplumber>=0.9.0
+
+# AI Analysis
+google-generativeai>=0.3.0
+
+# Data Processing
+pandas>=2.0.0
+
+# Visualization (essential)
+matplotlib>=3.7.0
+plotly>=5.15.0
+
+# Document Export
+python-docx>=0.8.11
+openpyxl>=3.1.0
+
+# Configuration
+python-dotenv>=1.0.0
+requests>=2.31.0 
