@@ -56,8 +56,7 @@ def check_dependencies():
         ('arabic_reshaper', 'Arabic text support'),
         ('python_bidi', 'Arabic text support'),
         ('seaborn', 'enhanced visualization'),
-        ('openpyxl', 'Excel support'),
-        ('pytesseract', 'OCR support')
+        ('openpyxl', 'Excel support')
     ]
     
     missing_essential = []
