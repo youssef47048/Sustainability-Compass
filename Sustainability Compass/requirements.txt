@@ -1,10 +1,12 @@
 # GUI and Desktop Application
 customtkinter>=5.2.0
 Pillow>=9.5.0
+tkinter-tooltip>=2.0.0
 
 # PDF Processing
 PyPDF2>=3.0.0
 pdfplumber>=0.9.0
+pytesseract>=0.3.10
 
 # Google Gemini AI
 google-generativeai>=0.3.0
@@ -30,7 +32,7 @@ python-bidi>=0.4.2
 # HTTP Requests and JSON
 requests>=2.31.0
 
-# Date and Time (built into Python, but explicit for clarity)
+# Date and Time
 python-dateutil>=2.8.0
 
 # Configuration

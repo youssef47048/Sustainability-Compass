@@ -6,17 +6,13 @@ import customtkinter as ctk
 import threading
 import os
 import logging
-import webbrowser
 from datetime import datetime
 
 # Core modules
 from pdf_processor import PDFProcessor
 from markdown_analyzer import MarkdownGeminiAnalyzer  # Switched back to MarkdownGeminiAnalyzer
 from visualization import SustainabilityVisualizer
-from config import (
-    APP_TITLE, WINDOW_SIZE, LANGUAGES, SDG_GOALS, ESG_CATEGORIES, 
-    COLORS, UI_LABELS, ANALYSIS_CATEGORIES
-)
+from config import *
 
 # Try to import enhanced export manager, fallback to regular if not available
 try:
