@@ -6,6 +6,7 @@ import customtkinter as ctk
 import threading
 import os
 import logging
+import webbrowser
 from datetime import datetime
 
 # Core modules
