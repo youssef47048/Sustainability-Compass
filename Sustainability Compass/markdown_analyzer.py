@@ -267,6 +267,66 @@ For each relevant SDG, specify the contribution level for chart generation:
 **Resource Requirements:** [Estimated resources needed]
 **Success Metrics:** [How to measure success]
 
+## Compliance and Standards Assessment
+**⚠️ CRITICAL MANDATORY SECTION - MUST INCLUDE ALL 6 FRAMEWORKS BELOW ⚠️**
+
+**INSTRUCTION**: You MUST provide detailed analysis for ALL six (6) international reporting frameworks listed below. Do not skip any framework. 
+
+**For each framework, follow this approach:**
+- If the framework IS mentioned in the document: Provide detailed analysis based on the document content
+- If the framework is NOT mentioned in the document: Start with "**This framework is not explicitly mentioned in the document.** However, based on the document's overall sustainability reporting approach..." and then provide an assessment
+- Always explain WHY you believe the document does or doesn't align with each framework
+
+### 1. Global Reporting Initiative (GRI) Standards
+**Assessment:** [If mentioned: Detailed assessment of GRI compliance. If NOT mentioned: "This framework is not explicitly mentioned in the document. However, based on the document's overall approach..." Then provide assessment and explain WHY]
+- **GRI Universal Standards compliance:** [Analysis]
+- **GRI Topic-specific Standards alignment:** [Analysis]
+- **Reporting quality and transparency:** [Assessment]
+
+### 2. International Finance Corporation (IFC) Standards
+**Assessment:** [If mentioned: Detailed IFC compliance analysis. If NOT mentioned: "This framework is not explicitly mentioned in the document. However, based on the document's overall approach..." Then provide assessment and explain WHY]
+- **Environmental and Social Performance Standards:** [Analysis]
+- **Stakeholder engagement alignment:** [Assessment]
+- **Risk management approach:** [Analysis]
+
+### 3. International Financial Reporting Standards (IFRS) - Sustainability Disclosure
+**IFRS S1 (General Requirements) Assessment:** [If mentioned: Detailed IFRS S1 compliance analysis. If NOT mentioned: "This framework is not explicitly mentioned in the document. However, based on the document's overall approach..." Then provide assessment and explain WHY]
+- **Governance disclosure:** [Assessment]
+- **Strategy disclosure:** [Assessment]
+- **Risk management disclosure:** [Assessment]
+- **Metrics and targets disclosure:** [Assessment]
+
+**IFRS S2 (Climate-related Disclosures) Assessment:** [If mentioned: Detailed IFRS S2 compliance analysis. If NOT mentioned: "This framework is not explicitly mentioned in the document. However, based on the document's climate disclosure approach..." Then provide assessment and explain WHY]
+- **Climate-related risks and opportunities:** [Assessment]
+- **Financial impact assessment:** [Analysis]
+- **Transition and physical risk disclosure:** [Assessment]
+
+### 4. GUID 5202 Standards
+**Assessment:** [If mentioned: Detailed GUID 5202 compliance analysis. If NOT mentioned: "This framework is not explicitly mentioned in the document. However, based on the document's assurance and governance practices..." Then provide assessment and explain WHY]
+- **Assurance framework alignment:** [Detailed assessment of assurance processes and independent verification]
+- **Internal controls and governance:** [Analysis of governance structures and control mechanisms]
+- **Risk management integration:** [Assessment of risk management frameworks]
+
+### 5. International Auditing and Assurance Standards Board (IAASB) Standards
+**Assessment:** [If mentioned: Detailed IAASB compliance analysis. If NOT mentioned: "This framework is not explicitly mentioned in the document. However, based on the document's auditing and assurance approach..." Then provide assessment and explain WHY]
+- **ISAE 3000 (Assurance on Non-Financial Information) compliance:** [Detailed assessment of non-financial assurance practices]
+- **Quality of assurance processes:** [Analysis of assurance methodology and rigor]
+- **Independent verification standards:** [Assessment of third-party verification and auditing]
+- **Assurance provider qualifications:** [Analysis of auditor expertise and independence]
+
+### 6. Additional Framework Compliance
+- **UN Global Compact:** [Assessment of UNGC alignment]
+- **Task Force on Climate-related Financial Disclosures (TCFD):** [TCFD assessment]
+- **Sustainability Accounting Standards Board (SASB):** [SASB assessment]
+
+**COMPLIANCE CHECKLIST CONFIRMATION:**
+□ GRI Standards - COMPLETED
+□ IFC Standards - COMPLETED  
+□ IFRS S1 & S2 - COMPLETED
+□ GUID 5202 - COMPLETED
+□ IAASB Standards - COMPLETED
+□ Additional Frameworks - COMPLETED
+
 ## Key Performance Indicators (KPIs) Assessment
 
 ### Environmental KPIs
@@ -281,17 +341,24 @@ For each relevant SDG, specify the contribution level for chart generation:
 ### Governance KPIs
 - [List specific governance metrics found in document with values]
 
-## Compliance and Standards Assessment
-- **Global Reporting Initiative (GRI):** [Assessment of GRI compliance]
-- **UN Global Compact:** [Assessment of UNGC alignment]
-- **Task Force on Climate-related Financial Disclosures (TCFD):** [TCFD assessment]
-- **Sustainability Accounting Standards Board (SASB):** [SASB assessment]
-
 ---
 *Comprehensive analysis completed using advanced AI sustainability framework*
 *Document processed: {pages_count} pages, {len(full_text)} characters*
 
-IMPORTANT: Base your analysis ENTIRELY on the actual content provided. Use specific data, quotes, and evidence from the document. Provide realistic scores based on actual performance indicators found in the text.
+🚨 CRITICAL REQUIREMENTS - DO NOT IGNORE ANY OF THESE:
+1. Base your analysis ENTIRELY on the actual content provided. Use specific data, quotes, and evidence from the document.
+2. Provide realistic scores based on actual performance indicators found in the text.
+3. **🛑 ABSOLUTE REQUIREMENT: You MUST include ALL SIX (6) compliance frameworks in the "Compliance and Standards Assessment" section:**
+   - ✅ GRI Standards (Global Reporting Initiative)
+   - ✅ IFC Standards (International Finance Corporation)
+   - ✅ IFRS S1 (General Sustainability Disclosure)
+   - ✅ IFRS S2 (Climate-related Disclosures)
+   - ✅ GUID 5202 Standards
+   - ✅ IAASB Standards (International Auditing and Assurance Standards Board)
+4. For EACH framework, you must provide detailed assessment and explain WHY the document does/doesn't comply.
+5. **TRANSPARENCY REQUIREMENT**: If a framework is not explicitly mentioned in the document, you MUST clearly state "This framework is not explicitly mentioned in the document" at the beginning of that framework's assessment.
+6. **CHECKPOINT**: Before submitting your response, verify you have included analysis for all 6 frameworks above.
+7. If ANY framework is missing from your response, that constitutes a FAILED analysis.
 
 COMPLETE DOCUMENT CONTENT TO ANALYZE:
 
