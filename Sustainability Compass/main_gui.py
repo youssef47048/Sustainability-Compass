@@ -13,6 +13,9 @@ from datetime import datetime
 from pdf_processor import PDFProcessor
 from markdown_analyzer import MarkdownGeminiAnalyzer  # Switched back to MarkdownGeminiAnalyzer
 from visualization import SustainabilityVisualizer
+from report_comparison import ReportComparison
+from comparison_visualizer import ComparisonVisualizer
+from comparison_dialogs import SaveReportDialog, ComparisonManagerWindow
 from config import *
 
 # Try to import enhanced export manager, fallback to regular if not available
@@ -48,8 +51,8 @@ class SustainabilityCompassApp:
         # Center the window
         self.root.update_idletasks()
         x = (self.root.winfo_screenwidth() // 2) - (1400 // 2)
-        y = (self.root.winfo_screenheight() // 2) - (900 // 2)
-        self.root.geometry(f"1400x900+{x}+{y}")
+        y = (self.root.winfo_screenheight() // 2) - (950 // 2)
+        self.root.geometry(f"1400x950+{x}+{y}")
         
     def setup_components(self):
         """Initialize core components"""
@@ -84,6 +87,9 @@ class SustainabilityCompassApp:
             self.api_status_text = f"🔴 API Error: {str(e)[:30]}..."
         
         self.visualizer = SustainabilityVisualizer()
+        self.report_comparison = ReportComparison()
+        self.comparison_visualizer = ComparisonVisualizer()
+        
         if ENHANCED_EXPORT_AVAILABLE:
             self.exporter = EnhancedReportExporter()
             print("✅ Using Enhanced Export with SDG Charts")
@@ -114,20 +120,25 @@ class SustainabilityCompassApp:
         
     def create_sidebar(self):
         """Create the sidebar with controls"""
-        self.sidebar = ctk.CTkFrame(self.root, width=300)
-        self.sidebar.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
-        self.sidebar.grid_propagate(False)
+        # Create main sidebar frame
+        sidebar_container = ctk.CTkFrame(self.root, width=300)
+        sidebar_container.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        sidebar_container.grid_propagate(False)
+        
+        # Create scrollable frame inside sidebar
+        self.sidebar = ctk.CTkScrollableFrame(sidebar_container, width=280)
+        self.sidebar.pack(fill="both", expand=True, padx=10, pady=10)
         
         # Professional Header
         header_frame = ctk.CTkFrame(self.sidebar)
-        header_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=20)
+        header_frame.pack(fill="x", padx=20, pady=20)
         
         title_label = ctk.CTkLabel(
             header_frame,
             text="🌱 Sustainability\nCompass Pro", 
             font=ctk.CTkFont(size=20, weight="bold")
         )
-        title_label.grid(row=0, column=0, pady=5, padx=10)
+        title_label.pack(pady=5, padx=10)
         
         tagline_label = ctk.CTkLabel(
             header_frame,
@@ -135,15 +146,14 @@ class SustainabilityCompassApp:
             font=ctk.CTkFont(size=11),
             text_color="gray"
         )
-        tagline_label.grid(row=1, column=0, pady=(0,5), padx=10)
-        header_frame.grid_columnconfigure(0, weight=1)
+        tagline_label.pack(pady=(0,5), padx=10)
         
         # Language Selection
         lang_frame = ctk.CTkFrame(self.sidebar)
-        lang_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=10)
+        lang_frame.pack(fill="x", padx=20, pady=10)
         
-        lang_label = ctk.CTkLabel(lang_frame, text="Language / اللغة:")
-        lang_label.grid(row=0, column=0, pady=5, padx=10, sticky="w")
+        lang_label = ctk.CTkLabel(lang_frame, text="Language:")
+        lang_label.pack(anchor="w", pady=5, padx=10)
         
         self.lang_combo = ctk.CTkComboBox(
             lang_frame,
@@ -151,15 +161,14 @@ class SustainabilityCompassApp:
             variable=self.current_language,
             command=self.on_language_change
         )
-        self.lang_combo.grid(row=1, column=0, pady=5, padx=10, sticky="ew")
-        lang_frame.grid_columnconfigure(0, weight=1)
+        self.lang_combo.pack(fill="x", pady=5, padx=10)
         
         # File Upload Section
         upload_frame = ctk.CTkFrame(self.sidebar)
-        upload_frame.grid(row=2, column=0, sticky="ew", padx=20, pady=10)
+        upload_frame.pack(fill="x", padx=20, pady=10)
         
         upload_label = ctk.CTkLabel(upload_frame, text="Document Processing:")
-        upload_label.grid(row=0, column=0, pady=5, padx=10, sticky="w")
+        upload_label.pack(anchor="w", pady=5, padx=10)
         
         self.upload_btn = ctk.CTkButton(
             upload_frame,
@@ -167,7 +176,7 @@ class SustainabilityCompassApp:
             command=self.select_pdf_file,
             height=40
         )
-        self.upload_btn.grid(row=1, column=0, pady=5, padx=10, sticky="ew")
+        self.upload_btn.pack(fill="x", pady=5, padx=10)
         
         self.file_label = ctk.CTkLabel(
             upload_frame, 
@@ -175,15 +184,14 @@ class SustainabilityCompassApp:
             wraplength=250,
             font=ctk.CTkFont(size=10)
         )
-        self.file_label.grid(row=2, column=0, pady=5, padx=10, sticky="ew")
-        upload_frame.grid_columnconfigure(0, weight=1)
+        self.file_label.pack(fill="x", pady=5, padx=10)
         
         # Analysis Section
         analysis_frame = ctk.CTkFrame(self.sidebar)
-        analysis_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=10)
+        analysis_frame.pack(fill="x", padx=20, pady=10)
         
         analysis_label = ctk.CTkLabel(analysis_frame, text="ESG Analysis Engine:")
-        analysis_label.grid(row=0, column=0, pady=5, padx=10, sticky="w")
+        analysis_label.pack(anchor="w", pady=5, padx=10)
         
         self.analyze_btn = ctk.CTkButton(
             analysis_frame,
@@ -192,20 +200,18 @@ class SustainabilityCompassApp:
             height=40,
             state="disabled"
         )
-        self.analyze_btn.grid(row=1, column=0, pady=5, padx=10, sticky="ew")
+        self.analyze_btn.pack(fill="x", pady=5, padx=10)
         
         self.progress_bar = ctk.CTkProgressBar(analysis_frame)
-        self.progress_bar.grid(row=2, column=0, pady=5, padx=10, sticky="ew")
+        self.progress_bar.pack(fill="x", pady=5, padx=10)
         self.progress_bar.set(0)
-        
-        analysis_frame.grid_columnconfigure(0, weight=1)
         
         # Export Section
         export_frame = ctk.CTkFrame(self.sidebar)
-        export_frame.grid(row=4, column=0, sticky="ew", padx=20, pady=10)
+        export_frame.pack(fill="x", padx=20, pady=10)
         
         export_label = ctk.CTkLabel(export_frame, text="Report Generation:")
-        export_label.grid(row=0, column=0, pady=5, padx=10, sticky="w")
+        export_label.pack(anchor="w", pady=5, padx=10)
         
         self.export_pdf_btn = ctk.CTkButton(
             export_frame,
@@ -213,7 +219,7 @@ class SustainabilityCompassApp:
             command=lambda: self.export_report('pdf'),
             state="disabled"
         )
-        self.export_pdf_btn.grid(row=1, column=0, pady=2, padx=10, sticky="ew")
+        self.export_pdf_btn.pack(fill="x", pady=2, padx=10)
         
         self.export_word_btn = ctk.CTkButton(
             export_frame,
@@ -221,7 +227,7 @@ class SustainabilityCompassApp:
             command=lambda: self.export_report('word'),
             state="disabled"
         )
-        self.export_word_btn.grid(row=2, column=0, pady=2, padx=10, sticky="ew")
+        self.export_word_btn.pack(fill="x", pady=2, padx=10)
         
         self.export_excel_btn = ctk.CTkButton(
             export_frame,
@@ -229,7 +235,7 @@ class SustainabilityCompassApp:
             command=lambda: self.export_report('excel'),
             state="disabled"
         )
-        self.export_excel_btn.grid(row=3, column=0, pady=2, padx=10, sticky="ew")
+        self.export_excel_btn.pack(fill="x", pady=2, padx=10)
         
         self.view_dashboard_btn = ctk.CTkButton(
             export_frame,
@@ -237,12 +243,34 @@ class SustainabilityCompassApp:
             command=self.view_dashboard,
             state="disabled"
         )
-        self.view_dashboard_btn.grid(row=4, column=0, pady=2, padx=10, sticky="ew")
+        self.view_dashboard_btn.pack(fill="x", pady=2, padx=10)
         
-        export_frame.grid_columnconfigure(0, weight=1)
+        # Comparison Section
+        comparison_frame = ctk.CTkFrame(self.sidebar)
+        comparison_frame.pack(fill="x", padx=20, pady=10)
         
-        # Make sidebar rows expand properly
-        self.sidebar.grid_rowconfigure(5, weight=1)
+        comparison_label = ctk.CTkLabel(comparison_frame, text="Multi-Year Comparison:")
+        comparison_label.pack(anchor="w", pady=5, padx=10)
+        
+        self.save_current_btn = ctk.CTkButton(
+            comparison_frame,
+            text="💾 Save Current Report",
+            command=self.save_current_report,
+            state="disabled"
+        )
+        self.save_current_btn.pack(fill="x", pady=2, padx=10)
+        
+        self.manage_reports_btn = ctk.CTkButton(
+            comparison_frame,
+            text="📊 Manage Reports",
+            command=self.open_comparison_manager,
+            state="normal"
+        )
+        self.manage_reports_btn.pack(fill="x", pady=2, padx=10)
+        
+        # Add some bottom padding to ensure scrolling works well
+        bottom_spacer = ctk.CTkFrame(self.sidebar, height=20, fg_color="transparent")
+        bottom_spacer.pack(fill="x", pady=10)
         
     def create_main_content(self):
         """Create the main content area"""
@@ -460,6 +488,7 @@ class SustainabilityCompassApp:
         self.export_word_btn.configure(state="normal")
         self.export_excel_btn.configure(state="normal")
         self.view_dashboard_btn.configure(state="normal")
+        self.save_current_btn.configure(state="normal")
         
         # Re-enable upload and analysis
         self.analyze_btn.configure(state="normal")
@@ -678,7 +707,46 @@ class SustainabilityCompassApp:
             
         except Exception as e:
             messagebox.showerror("Dashboard Error", f"Error creating dashboard: {str(e)}")
+    
+    def save_current_report(self):
+        """Save current analysis results for comparison"""
+        if not self.current_analysis:
+            messagebox.showerror("Error", "No analysis results to save.")
+            return
+        
+        # Create dialog to get company name and year
+        dialog = SaveReportDialog(self.root)
+        self.root.wait_window(dialog.dialog)
+        
+        if dialog.result:
+            company_name, year = dialog.result
             
+            # Prepare metadata
+            metadata = {
+                'file_name': os.path.basename(self.pdf_file_path) if hasattr(self, 'pdf_file_path') else 'Unknown',
+                'analysis_date': datetime.now().isoformat(),
+                'language': self.current_language.get(),
+                'document_pages': self.pdf_content.get('page_count', 0) if self.pdf_content else 0
+            }
+            
+            # Save the report
+            success = self.report_comparison.store_report(
+                company_name, year, self.current_analysis, metadata
+            )
+            
+            if success:
+                messagebox.showinfo("Success", f"Report saved for {company_name} ({year})")
+            else:
+                messagebox.showerror("Error", "Failed to save report")
+    
+    def open_comparison_manager(self):
+        """Open the comparison management window"""
+        manager = ComparisonManagerWindow(
+            self.root, 
+            self.report_comparison, 
+            self.comparison_visualizer
+        )
+        
     def run(self):
         """Run the application"""
         self.root.mainloop()
