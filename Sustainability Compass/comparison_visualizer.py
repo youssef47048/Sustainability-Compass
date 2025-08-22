@@ -650,7 +650,7 @@ class ComparisonVisualizer:
         ''' if ai_analysis and len(ai_analysis) > 50 else ''}
         
         <div class="footer">
-            <p>📊 Powered by Sustainability Compass Pro | 🤖 AI Analysis by Gemini | 📈 Interactive Charts by Plotly</p>
+            <p>📊 Powered by Sustainability Compass Pro | 🤖 AI Analysis Engine | 📈 Interactive Charts by Plotly</p>
             <p>This dashboard provides comprehensive multi-year sustainability performance analysis with trend identification and strategic insights.</p>
         </div>
     </div>

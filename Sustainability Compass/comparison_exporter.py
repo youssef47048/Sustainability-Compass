@@ -761,7 +761,7 @@ All scores are normalized on a 0-10 scale for consistent comparison across years
         doc.add_heading('Technical Notes', level=2)
         tech_notes = f"""
 • Report generated on: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}
-• Analysis engine: Gemini AI with structured prompt methodology
+• Analysis engine: AI Engine with structured prompt methodology
 • Comparison framework: Multi-dimensional ESG and SDG assessment
 • Statistical methods: Year-over-year change calculation with trend identification
 • Visualization: Interactive charts available in HTML dashboard export

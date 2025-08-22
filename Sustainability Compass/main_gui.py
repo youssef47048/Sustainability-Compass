@@ -65,20 +65,20 @@ class SustainabilityCompassApp:
             model_name = getattr(self.gemini_analyzer.model, '_model_name', None)
             if model_name and 'gemini' in model_name.lower():
                 # Clean up the model name for display
-                display_name = model_name.replace('models/', '').replace('gemini-', 'Gemini ')
+                display_name = model_name.replace('models/', '').replace('gemini-', '')
                 # Special handling for different model versions
                 if '2.5-pro' in model_name.lower():
-                    display_name = 'Gemini 2.5 Pro'
+                    display_name = 'AI Engine '
                 elif '2.5-flash-lite' in model_name.lower():
-                    display_name = 'Gemini 2.5 Flash Lite'
+                    display_name = 'AI Engine '
                 elif '2.5-flash' in model_name.lower():
-                    display_name = 'Gemini 2.5 Flash'
+                    display_name = 'AI Engine '
                 elif '1.5-flash' in model_name.lower():
-                    display_name = 'Gemini 1.5 Flash'
+                    display_name = 'AI Engine '
                 elif '1.5-pro' in model_name.lower():
-                    display_name = 'Gemini 1.5 Pro'
+                    display_name = 'AI Engine '
                 else:
-                    display_name = display_name.title()
+                    display_name = 'AI Engine ' + display_name.replace('gemini-', '').replace('models/', '').title()
                 self.api_status_text = f"🟢 {display_name} Ready (Full Content)"  # Added back Full Content indicator
             else:
                 self.api_status_text = "🟢 Analysis Engine Ready (Full Content)"
@@ -432,7 +432,7 @@ class SustainabilityCompassApp:
             
         if not self.gemini_analyzer:
             messagebox.showerror("API Error", 
-                               "Gemini AI is not available. Please check your API key and internet connection.\n"
+                               "AI Engine is not available. Please check your API key and internet connection.\n"
                                "Run 'python test_api.py' to diagnose the issue.")
             return
             
@@ -454,7 +454,7 @@ class SustainabilityCompassApp:
             # Step 1: Process PDF
             self.pdf_content = self.pdf_processor.extract_content(self.pdf_file_path)
             
-            self.root.after(0, lambda: self.update_progress(0.3, "Analyzing with Gemini AI..."))
+            self.root.after(0, lambda: self.update_progress(0.3, "Analyzing with AI Engine..."))
             
             # Step 2: Generate comprehensive analysis
             language = self.current_language.get()

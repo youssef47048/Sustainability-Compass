@@ -1,0 +1,17 @@
+{
+  "company_name": "s",
+  "year": 2025,
+  "analysis_date": "2025-08-23T01:31:58.819015",
+  "analysis_results": {
+    "error": true,
+    "error_type": "Full analysis failed",
+    "error_message": "API call failed after 3 attempts: 404 models/text-model is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "timestamp": "2025-08-23T01:31:43.186759"
+  },
+  "metadata": {
+    "file_name": "suger.pdf",
+    "analysis_date": "2025-08-23T01:31:58.818494",
+    "language": "en",
+    "document_pages": 118
+  }
+}
