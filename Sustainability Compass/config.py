@@ -6,7 +6,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # API Configuration
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')  # Set your API key in .env file
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')  # Set your API key in .env file
+
+# Validate API key is provided
+if not GEMINI_API_KEY:
+    raise ValueError(
+        "GEMINI_API_KEY environment variable is required. "
+        "Please set it in your .env file or environment variables. "
+        "Get your key from: https://aistudio.google.com/apikey"
+    )
 
 # Application Settings
 APP_TITLE = "Sustainability Compass Pro"
