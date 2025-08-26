@@ -59,14 +59,20 @@ Maps company performance to all 17 UN Sustainable Development Goals:
    pip install -r requirements.txt
    ```
 
-3. **Configure API Key**
+3. **Configure API Key** 🔐
+   
+   **IMPORTANT: For security, never hardcode your API key in source code!**
    
    Create a `.env` file in the project directory:
    ```bash
    GEMINI_API_KEY=your_gemini_api_key_here
    ```
    
-   Or edit `config.py` directly to set your API key.
+   You can copy from the template:
+   ```bash
+   cp .env.example .env
+   # Then edit .env with your actual API key
+   ```
 
 4. **Test your API key (recommended)**
    ```bash
@@ -80,12 +86,13 @@ Maps company performance to all 17 UN Sustainable Development Goals:
 
 ## 🔧 Configuration
 
-### API Key Setup
+### API Key Setup 🔐
 1. Get your Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Set it in one of these ways:
-   - Create `.env` file: `GEMINI_API_KEY=your_key_here`
-   - Edit `config.py`: Update the `GEMINI_API_KEY` variable
+2. **SECURE SETUP** - Choose one method:
+   - **Recommended**: Create `.env` file: `GEMINI_API_KEY=your_key_here`
    - Set environment variable: `export GEMINI_API_KEY=your_key_here`
+   
+   **⚠️ NEVER hardcode API keys in source code files!**
 
 ### 🆓 Free Tier vs 💰 Paid Models
 
