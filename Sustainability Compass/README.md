@@ -243,6 +243,13 @@ The application generates:
 - **No Storage**: No data stored on external servers
 - **Logs**: Local log files for debugging only
 
+### 🔐 API Key Security
+**CRITICAL**: Never commit API keys to version control!
+- ✅ Use `.env` file (already in `.gitignore`)
+- ✅ Use environment variables
+- ❌ Never hardcode keys in source files
+- 🔄 Rotate keys if accidentally exposed
+
 ## 💰 Cost Information
 
 ### Current Configuration (Hybrid)
