@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # API Configuration
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyA-sDeXmGNaEMhyl4yyfRLhgy1wpAfBRAQ')  # User's API key
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')  # Set your API key in .env file
 
 # Application Settings
 APP_TITLE = "Sustainability Compass Pro"
